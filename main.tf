@@ -147,6 +147,18 @@ resource "aws_lb" "ASALB" {
   }
 }
 
+# create listener
+resource "aws_lb_listener" "main" {
+  load_balancer_arn = aws_lb.ASALB.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
 # create target group
 resource "aws_lb_target_group" "main" {
   name     = "autoscaling-tg"
@@ -185,7 +197,7 @@ resource "aws_autoscaling_group" "main" {
   vpc_zone_identifier       = [aws_subnet.public.id]
   target_group_arns         = [aws_lb_target_group.main.arn]
   health_check_type         = "ELB"
-  health_check_grace_period = 300
+  health_check_grace_period = 120
   termination_policies      = ["OldestInstance"]
   tag {
     key                 = "Name"
