@@ -29,7 +29,7 @@ variable "subnet_private_cidr" {
 variable "key_name" {
     description = "The name of the key pair to use for the instances"
     type        = string
-    default     = "id_ed25519"
+    default     = "id_ed25519" # Enter your key-pair name
 }
 
 # Define the AMI and instance type
