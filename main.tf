@@ -188,17 +188,18 @@ resource "aws_launch_template" "main_lt" {
 }
 
 resource "aws_autoscaling_group" "main" {
-  desired_capacity = 2
-  max_size         = 4
-  min_size         = 2
+  desired_capacity = var.desired_capacity
+  max_size         = var.max_size
+  min_size         = var.min_size
   launch_template {
     id = aws_launch_template.main_lt.id
   }
   vpc_zone_identifier       = [aws_subnet.public.id]
   target_group_arns         = [aws_lb_target_group.main.arn]
   health_check_type         = "ELB"
-  default_cooldown          = 120
-  health_check_grace_period = 120
+  default_cooldown          = var.default_cooldown
+  default_instance_warmup   = var.default_instance_warmup
+  health_check_grace_period = var.health_check_grace_period
   termination_policies      = ["OldestInstance"]
   tag {
     key                 = "Name"
