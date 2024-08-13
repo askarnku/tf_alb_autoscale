@@ -91,6 +91,13 @@ resource "aws_security_group" "alb_sg" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
+    # Allow all outbound traffic (IPv4 and IPv6)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags = {
     Name = "ALBSG"
@@ -113,6 +120,14 @@ resource "aws_security_group" "ec2_sg" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [local.myip]
+  }
+
+    # Allow all outbound traffic (IPv4 and IPv6)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -160,7 +175,6 @@ resource "aws_launch_template" "main_lt" {
     user_data              = filebase64("./user-data.sh")
 }
 
-# create autoscaling group
 resource "aws_autoscaling_group" "main" {
   desired_capacity = 2
   max_size         = 4
@@ -177,5 +191,18 @@ resource "aws_autoscaling_group" "main" {
     key                 = "Name"
     value               = "autoscaling-asg"
     propagate_at_launch = true
+  }
+}
+
+resource "aws_autoscaling_policy" "cpu_scaling" {
+  name                   = "TargetTrackingPolicy"
+  policy_type            = "TargetTrackingScaling"
+  autoscaling_group_name = aws_autoscaling_group.main.name
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 30.0
   }
 }
