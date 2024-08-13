@@ -91,7 +91,7 @@ resource "aws_security_group" "alb_sg" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
-    # Allow all outbound traffic (IPv4 and IPv6)
+  # Allow all outbound traffic (IPv4 and IPv6)
   egress {
     from_port   = 0
     to_port     = 0
@@ -122,7 +122,7 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = [local.myip]
   }
 
-    # Allow all outbound traffic (IPv4 and IPv6)
+  # Allow all outbound traffic (IPv4 and IPv6)
   egress {
     from_port   = 0
     to_port     = 0
@@ -177,14 +177,14 @@ resource "aws_launch_template" "main_lt" {
   instance_type          = var.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  
+
   tag_specifications {
     resource_type = "instance"
     tags = {
       Name = "autoscaling-lt"
     }
   }
-    user_data              = filebase64("./user-data.sh")
+  user_data = filebase64("./user-data.sh")
 }
 
 resource "aws_autoscaling_group" "main" {
@@ -197,6 +197,7 @@ resource "aws_autoscaling_group" "main" {
   vpc_zone_identifier       = [aws_subnet.public.id]
   target_group_arns         = [aws_lb_target_group.main.arn]
   health_check_type         = "ELB"
+  default_cooldown          = 120
   health_check_grace_period = 120
   termination_policies      = ["OldestInstance"]
   tag {
